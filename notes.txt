@@ -1,0 +1,32 @@
+Users and passwords:
+
+Users:
+    Otha Frye
+        othaf
+        OthaFrye@LL123!
+    Nigel Bowman
+        nigelb
+        NigelBowman@LL123!
+    Oscar Nash
+        oscarn
+        OscarNash@LL123!
+    Ike Blanchard
+        ikeb
+        IkeBlanchard@LL123!
+
+Delivery Crew:
+    Sonny Stone
+        sonnys
+        SonnyStone@LL123!
+    Chas Wilkerson
+        chasw
+        ChasWilkerson@LL123!
+
+Managers
+    Adrian Georgiou
+        adriang
+        AdrianGeorgiou@LL123!
+        "auth_token": "7c3e434d4228a44885c95d93f18ac180fbd5382a"
+    Mario Aetos
+        marioa
+        MarioAetos@LL123!
