@@ -18,6 +18,7 @@ Delivery Crew:
     Sonny Stone
         sonnys
         SonnyStone@LL123!
+        ce9ecf42ed0f91749b35365daa7dd78ae95613b2
     Chas Wilkerson
         chasw
         ChasWilkerson@LL123!

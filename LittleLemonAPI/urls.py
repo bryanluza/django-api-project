@@ -1,6 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 from . import views
 from djoser.views import UserViewSet
+
+router = routers.DefaultRouter()
+router.register(r'categories', views.CategoryViewSet)
+router.register(r'menu-items', views.MenuItemViewSet)
 
 urlpatterns = [
     path('groups/manager/users', views.ManagerUserViewSet.as_view({
@@ -18,9 +23,9 @@ urlpatterns = [
         'delete' : 'remove_delivery_crew'
         }), name='delivery-crew-users-delete'),
 
-    path('categories', views.CategoryViewSet.as_view({'get':'list'}), name='categories'),
-    path('menu-items', views.MenuItemViewSet.as_view({'get':'list'}), name='menu-items'),
-    path('menu-items/<int:pk>', views.MenuItemViewSet.as_view({'get':'list'}), name='menu-items-detail'),
+    path('', include(router.urls)),
+    # path('menu-items', views.MenuItemViewSet.as_view({'get':'list'}), name='menu-items'),
+    # path('menu-items/<int:pk>', views.MenuItemViewSet.as_view({'get':'list'}), name='menu-items-detail'),
 
     path('cart/menu-items', views.CartViewSet.as_view({'get':'list'}), name='cart'),
     path('cart/menu-items/<int:pk>', views.CartViewSet.as_view({'get':'list'}), name='cart-detail'),
