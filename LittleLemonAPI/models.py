@@ -16,10 +16,14 @@ class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     menuitem = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
     quantity = models.SmallIntegerField()
-    unitprice = models.DecimalField(max_digits=6, decimal_places=2)
+    # unitprice = models.DecimalField(max_digits=6, decimal_places=2)
 
     class Meta:
         unique_together = ('user', 'menuitem')
+
+    @property
+    def unitprice(self):
+        return self.menuitem.price
 
     @property
     def price(self):

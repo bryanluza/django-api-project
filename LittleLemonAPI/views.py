@@ -133,10 +133,26 @@ class MenuItemViewSet(viewsets.ModelViewSet):
             return (permissions.AllowAny(),)
         return (permissions.IsAuthenticated(), IsManager())
 
-
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Cart.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        return serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        # Delete all cart items for the current user
+        deleted_count, _ = Cart.objects.filter(user=self.request.user).delete()
+        if deleted_count > 0:
+            return Response({"message": f"Successfully deleted {deleted_count} item(s) from your cart."},
+                            status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message": "Your cart is already empty."},
+                            status=status.HTTP_404_NOT_FOUND)
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()

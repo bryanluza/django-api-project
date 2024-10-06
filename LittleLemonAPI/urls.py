@@ -8,6 +8,7 @@ router.register(r'categories', views.CategoryViewSet)
 router.register(r'menu-items', views.MenuItemViewSet)
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('groups/manager/users', views.ManagerUserViewSet.as_view({
         'get':'list',
         'post':'assign_manager'
@@ -22,19 +23,17 @@ urlpatterns = [
     path('groups/delivery-crew/users/<int:pk>', views.DeliveryCrewUserViewSet.as_view({
         'delete' : 'remove_delivery_crew'
         }), name='delivery-crew-users-delete'),
-
-    path('', include(router.urls)),
-    # path('menu-items', views.MenuItemViewSet.as_view({'get':'list'}), name='menu-items'),
-    # path('menu-items/<int:pk>', views.MenuItemViewSet.as_view({'get':'list'}), name='menu-items-detail'),
-
-    path('cart/menu-items', views.CartViewSet.as_view({'get':'list'}), name='cart'),
-    path('cart/menu-items/<int:pk>', views.CartViewSet.as_view({'get':'list'}), name='cart-detail'),
+    path('cart/menu-items/', views.CartViewSet.as_view({
+        'get': 'list',
+        'post': 'perform_create',
+        'delete': 'destroy'
+    }), name='cart'),
 
     path('orders', views.OrderViewSet.as_view({'get':'list'}), name='orders'),
-    path('orders/<int:pk>', views.OrderViewSet.as_view({'get':'list'}), name='orders-detail'),
+       path('orders/<int:pk>', views.OrderViewSet.as_view({'get':'list'}), name='orders-detail'),
 
-    # Include the default Djoser user endpoints
+    # Default Djoser user endpoints
     path('users/', UserViewSet.as_view({'post': 'create'}), name='user-list'),
-    # Your custom 'me' endpoint
+    # Custom 'me' endpoint
     path('users/me/', views.CustomUserViewSet.as_view({'get': 'me'}), name='user-me'),
 ]
