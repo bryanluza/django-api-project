@@ -6,6 +6,7 @@ from djoser.views import UserViewSet
 router = routers.DefaultRouter()
 router.register(r'categories', views.CategoryViewSet)
 router.register(r'menu-items', views.MenuItemViewSet)
+# router.register(r'orders', views.OrderViewSet, basename='orders')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -25,12 +26,20 @@ urlpatterns = [
         }), name='delivery-crew-users-delete'),
     path('cart/menu-items/', views.CartViewSet.as_view({
         'get': 'list',
-        'post': 'perform_create',
+        'post': 'create',
         'delete': 'destroy'
     }), name='cart'),
-
-    path('orders', views.OrderViewSet.as_view({'get':'list'}), name='orders'),
-       path('orders/<int:pk>', views.OrderViewSet.as_view({'get':'list'}), name='orders-detail'),
+    path('orders/', views.OrderViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+        # 'delete': 'destroy'
+    }), name='orders'),
+    path('orders/<int:pk>', views.OrderItemViewSet.as_view({
+        'get': 'list',
+        'delete': 'destroy',
+        'put': 'update',
+        'patch': 'partial_update'
+    }), name='order-items'),
 
     # Default Djoser user endpoints
     path('users/', UserViewSet.as_view({'post': 'create'}), name='user-list'),

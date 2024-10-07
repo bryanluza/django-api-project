@@ -5,11 +5,19 @@ from django.contrib.auth.models import User, Group
 from djoser.views import UserViewSet
 from .models import *
 from .serializers import *
+from django.db import transaction
+from django.db.models import Sum
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 # Maybe put this in a permissions.py file and inport it
 class IsManager(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.groups.filter(name='Manager').exists()
+
+class IsDeliveryCrew(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.groups.filter(name='Delivery Crew').exists()
 
 # Create your views here.
 # User management views
@@ -141,8 +149,12 @@ class CartViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Cart.objects.filter(user=self.request.user)
 
-    def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=self.request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def destroy(self, request, *args, **kwargs):
         # Delete all cart items for the current user
@@ -157,7 +169,97 @@ class CartViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-# class OrderItemViewSet(viewsets.ModelViewSet):
-#     queryset = OrderItem.objects.all()
-#     serializer_class = OrderItemSerializer
+    def get_queryset(self):
+        if IsManager():
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        cart_items = Cart.objects.filter(user=request.user)
+        if not cart_items.exists():
+            return Response({"error": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            order = Order.objects.create(user=request.user, total=0, date=timezone.now())
+            total = 0
+            for cart_item in cart_items:
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    menuitem=cart_item.menuitem,
+                    quantity=cart_item.quantity,
+                    unitprice=cart_item.menuitem.price
+                )
+                total += order_item.quantity * order_item.unitprice
+                cart_item.delete()
+
+            order.total = total
+            order.save()
+
+        serializer = self.get_serializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class OrderItemViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        order_id = self.kwargs.get('pk')
+        if IsManager() or IsDeliveryCrew():
+            return OrderItem.objects.filter(order_id=order_id)
+        else:
+            return OrderItem.objects.filter(order_id=order_id, order__user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        order_id = self.kwargs.get('pk')
+        order = get_object_or_404(Order, id=order_id)
+
+        if not IsManager() and order.user != request.user:
+            return Response({"detail": "You do not have permission to view this order's items."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        order_id = self.kwargs.get('pk')
+        order = get_object_or_404(Order, id=order_id)
+
+        # Check if the user is in the Manager group
+        if not IsManager():
+            return Response({"detail": "You do not have permission to delete this order."},
+                            status=status.HTTP_403_FORBIDDEN)
+        # Delete all related OrderItems
+        OrderItem.objects.filter(order=order).delete()
+        # Delete the Order
+        order.delete()
+        return Response({"detail": "Order and related items have been deleted."},
+                        status=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        return self._update_order(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        return self._update_order(request, *args, partial=True, **kwargs)
+
+    def _update_order(self, request, *args, partial=False, **kwargs):
+        order_id = self.kwargs.get('pk')
+        order = get_object_or_404(Order, id=order_id)
+
+        if not IsManager() and not IsDeliveryCrew() :
+            return Response({"detail": "You do not have permission to update this order."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        serializer = OrderUpdateSerializer(order, data=request.data, partial=partial, context={'request': request})
+        if serializer.is_valid():
+            # If user is Delivery Crew, only allow updating the status field
+            if IsDeliveryCrew():
+                if set(request.data.keys()) - {'status'}:
+                    return Response({"detail": "Delivery crew can only update the status field."},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
