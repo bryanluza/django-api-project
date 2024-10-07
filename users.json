@@ -1,0 +1,43 @@
+{
+    "Users": {
+      "Otha Frye": {
+        "username": "othaf",
+        "password": "OthaFrye@LL123!",
+        "auth_token": "1cf82a11f0be033341c9fefa24184b96e0f89512"
+      },
+      "Nigel Bowman": {
+        "username": "nigelb",
+        "password": "NigelBowman@LL123!"
+      },
+      "Oscar Nash": {
+        "username": "oscarn",
+        "password": "OscarNash@LL123!"
+      },
+      "Ike Blanchard": {
+        "username": "ikeb",
+        "password": "IkeBlanchard@LL123!"
+      }
+    },
+    "Delivery Crew": {
+      "Sonny Stone": {
+        "username": "sonnys",
+        "password": "SonnyStone@LL123!",
+        "auth_token": "ce9ecf42ed0f91749b35365daa7dd78ae95613b2"
+      },
+      "Chas Wilkerson": {
+        "username": "chasw",
+        "password": "ChasWilkerson@LL123!"
+      }
+    },
+    "Managers": {
+      "Adrian Georgiou": {
+        "username": "adriang",
+        "password": "AdrianGeorgiou@LL123!",
+        "auth_token": "7c3e434d4228a44885c95d93f18ac180fbd5382a"
+      },
+      "Mario Aetos": {
+        "username": "marioa",
+        "password": "MarioAetos@LL123!"
+      }
+    }
+  }
