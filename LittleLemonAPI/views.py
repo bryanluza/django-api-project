@@ -10,14 +10,9 @@ from django.db.models import Sum
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
-# Maybe put this in a permissions.py file and inport it
 class IsManager(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.groups.filter(name='Manager').exists()
-
-class IsDeliveryCrew(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.groups.filter(name='Delivery Crew').exists()
 
 # Create your views here.
 # User management views
@@ -172,9 +167,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        if IsManager():
+        if self.request.user.groups.filter(name='Manager').exists():
             return Order.objects.all()
-        return Order.objects.filter(user=self.request.user)
+        elif self.request.user.groups.filter(name='Delivery Crew').exists():
+            return Order.objects.filter(delivery_crew_id=self.request.user)
+        else:
+            return Order.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         cart_items = Cart.objects.filter(user=request.user)
@@ -206,7 +204,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         order_id = self.kwargs.get('pk')
-        if IsManager() or IsDeliveryCrew():
+        if self.request.user.groups.filter(name='Manager').exists():
             return OrderItem.objects.filter(order_id=order_id)
         else:
             return OrderItem.objects.filter(order_id=order_id, order__user=self.request.user)
@@ -215,7 +213,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         order_id = self.kwargs.get('pk')
         order = get_object_or_404(Order, id=order_id)
 
-        if not IsManager() and order.user != request.user:
+        if not self.request.user.groups.filter(name='Manager').exists() and order.user != request.user:
             return Response({"detail": "You do not have permission to view this order's items."},
                             status=status.HTTP_403_FORBIDDEN)
 
@@ -228,7 +226,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         order = get_object_or_404(Order, id=order_id)
 
         # Check if the user is in the Manager group
-        if not IsManager():
+        if not self.request.user.groups.filter(name='Manager').exists():
             return Response({"detail": "You do not have permission to delete this order."},
                             status=status.HTTP_403_FORBIDDEN)
         # Delete all related OrderItems
@@ -248,18 +246,26 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         order_id = self.kwargs.get('pk')
         order = get_object_or_404(Order, id=order_id)
 
-        if not IsManager() and not IsDeliveryCrew() :
+        is_manager = self.request.user.groups.filter(name="Manager").exists()
+        is_delivery_crew = self.request.user.groups.filter(name="Delivery Crew").exists()
+        is_assigned_delivery_crew = is_delivery_crew and Order.objects.filter(id=order_id, delivery_crew=self.request.user).exists()
+
+        if not (is_manager or is_assigned_delivery_crew):
             return Response({"detail": "You do not have permission to update this order."},
                             status=status.HTTP_403_FORBIDDEN)
 
         serializer = OrderUpdateSerializer(order, data=request.data, partial=partial, context={'request': request})
+
         if serializer.is_valid():
-            # If user is Delivery Crew, only allow updating the status field
-            if IsDeliveryCrew():
+            if is_delivery_crew:
+                # Delivery crew can only update the status field
                 if set(request.data.keys()) - {'status'}:
                     return Response({"detail": "Delivery crew can only update the status field."},
                                     status=status.HTTP_400_BAD_REQUEST)
+
             serializer.save()
             return Response(serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 

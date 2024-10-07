@@ -22,14 +22,15 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     menuitem = MenuItemSerializer(read_only=True)
+    menuitem_id = serializers.IntegerField(write_only=True)
     unitprice = serializers.DecimalField(
-        max_digits=6, 
-        decimal_places=2, 
+        max_digits=6,
+        decimal_places=2,
         read_only=True
     )
     price = serializers.DecimalField(
-        max_digits=6, 
-        decimal_places=2, 
+        max_digits=6,
+        decimal_places=2,
         read_only=True
     )
 
@@ -39,9 +40,10 @@ class CartSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'unitprice', 'price']
 
     def create(self, validated_data):
-        menuitem = validated_data['menuitem']
+        menuitem_id = validated_data['menuitem_id']
+        menuitem = MenuItem.objects.get(id=menuitem_id)
         quantity = validated_data['quantity']
-        
+
         # Assuming unitprice is a field on MenuItem model
         unitprice = menuitem.price  # Adjust this if the field name is different
         price = unitprice * quantity
@@ -49,11 +51,10 @@ class CartSerializer(serializers.ModelSerializer):
         cart_item = Cart.objects.create(
             menuitem=menuitem,
             quantity=quantity,
-            unitprice=unitprice,
-            price=price,
             user=self.context['request'].user  # Assuming you're passing the request in the context
         )
         return cart_item
+
 
     def update(self, instance, validated_data):
         if 'quantity' in validated_data:

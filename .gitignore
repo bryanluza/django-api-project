@@ -1,0 +1,14 @@
+# Ignore Python bytecode files
+**/__pycache__/
+**/*.pyc
+
+# Ignore the entire .pytest_cache directory
+.pytest_cache/
+
+# Ignore Python compiled files
+*.pyo
+*.pyd
+
+# Ignore virtual environment directories (if you're using one)
+venv/
+.env/
