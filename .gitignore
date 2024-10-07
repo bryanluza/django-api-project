@@ -12,3 +12,5 @@
 # Ignore virtual environment directories (if you're using one)
 venv/
 .env/
+
+notes.txt
