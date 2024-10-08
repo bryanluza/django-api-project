@@ -1,0 +1,17 @@
+meta {
+  name: delivery-crew
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:8000/api/groups/delivery-crew/users
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: Authorization
+  value: Token 7c3e434d4228a44885c95d93f18ac180fbd5382a
+  placement: header
+}

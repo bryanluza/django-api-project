@@ -1,0 +1,22 @@
+meta {
+  name: order-delivery
+  type: http
+  seq: 9
+}
+
+get {
+  url: http://127.0.0.1:8000/api/orders/
+  body: formUrlEncoded
+  auth: apikey
+}
+
+auth:apikey {
+  key: Authorization
+  value: Token ce9ecf42ed0f91749b35365daa7dd78ae95613b2
+  placement: header
+}
+
+body:form-urlencoded {
+  status: false
+  ~delivery_crew: 
+}

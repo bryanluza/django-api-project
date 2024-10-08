@@ -1,0 +1,25 @@
+meta {
+  name: menu-items
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://127.0.0.1:8000/api/menu-items
+  body: formUrlEncoded
+  auth: apikey
+}
+
+auth:apikey {
+  key: Authorization
+  value: Token 681d76ffd165dbf80ea014042b0f0150953bcecc
+  placement: header
+}
+
+body:form-urlencoded {
+  price: 33.33
+  ~featured: False
+  ~title: aoeusnth
+  ~price: 4
+  ~category_id: 2
+}

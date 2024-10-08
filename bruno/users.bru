@@ -1,0 +1,17 @@
+meta {
+  name: users
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:8000/api/users/me
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: Authorization
+  value: Token b72354183d37c9e62ae49a33f3371cd05e295de1
+  placement: header
+}

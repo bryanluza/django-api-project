@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "django-api-project",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
