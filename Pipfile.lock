@@ -289,12 +289,12 @@
         },
         "djoser": {
             "hashes": [
-                "sha256:6af76cb8d73f8a879ab417c1251f5aa0242c4e3c4a8fee3a6393f1126874b269",
-                "sha256:c46e4b609348b824ba138aba914ca8a89bb42b7d23975c34e2702ea04b13c989"
+                "sha256:6ceeea9898cbdd585f1daa1ee9d46270600c0401dcd2d1db6f7894782006f6a6",
+                "sha256:b97d233b626c26ebccb09f5614420873ad78b8b1fb1459c76475b05319bae567"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.8' and python_version < '4.0'",
-            "version": "==2.3.0"
+            "markers": "python_version >= '3.9' and python_version < '4.0'",
+            "version": "==2.3.3"
         },
         "idna": {
             "hashes": [
